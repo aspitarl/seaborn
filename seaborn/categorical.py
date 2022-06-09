@@ -43,15 +43,15 @@ __all__ = [
 # but probably should move that more centrally
 class _CategoricalPlotterNew(_RelationalPlotter):
 
-    semantics = "x", "y", "hue", "units"
+    semantics = "x", "y", "hue", "units", "style"
 
-    wide_structure = {"x": "@columns", "y": "@values", "hue": "@columns"}
+    wide_structure = {"x": "@columns", "y": "@values", "hue": "@columns", "style": "@columns"}
 
     # flat_structure = {"x": "@values", "y": "@values"}
     flat_structure = {"y": "@values"}
 
     _legend_func = "scatter"
-    _legend_attributes = ["color"]
+    _legend_attributes = ["color", "marker"]
 
     def __init__(
         self,
@@ -288,6 +288,10 @@ class _CategoricalPlotterNew(_RelationalPlotter):
 
             if "hue" in self.variables:
                 points.set_facecolors(self._hue_map(sub_data["hue"]))
+
+            if "style" in self.variables:
+                p = [self._style_map(val, "path") for val in sub_data["style"]]
+                points.set_paths(p)
 
             if edgecolor == "gray":  # XXX TODO change to "auto"
                 points.set_edgecolors(self._get_gray(points.get_facecolors()))
@@ -2778,6 +2782,7 @@ def stripplot(
     jitter=True, dodge=False, orient=None, color=None, palette=None,
     size=5, edgecolor="gray", linewidth=0, ax=None,
     hue_norm=None, native_scale=False, formatter=None, legend="auto",
+    style=None, style_order=None, markers=True,
     **kwargs
 ):
 
@@ -2803,6 +2808,7 @@ def stripplot(
     color = _default_color(ax.scatter, hue, color, kwargs)
 
     p.map_hue(palette=palette, order=hue_order, norm=hue_norm)
+    p.map_style(markers=markers, order=style_order)
 
     # XXX Copying possibly bad default decisions from original code for now
     kwargs.setdefault("zorder", 3)
